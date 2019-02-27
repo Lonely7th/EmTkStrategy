@@ -15,7 +15,8 @@ from core.database_manager import DBManager
 from core.report_manager import creat_report
 
 
-# 计算当前时间段的wmacd值
+from crawl.pettm_crawl import start_pe_crawl
+from crawl.ticker_w_crawl import start_tk_crawl
 from log.log_manager import Logger
 
 
@@ -67,19 +68,16 @@ def fun_analysis(cur_time=datetime.datetime.now()):
         tk_data_list = tk_item["data_list"]
         pe_data_list = pe_item["data_list"]
 
-        # 数据校验
-        if str(cur_time).split(" ")[0] == str(pe_data_list[-1]["date"]) == str(tk_data_list[-1]["date"]):
-            # 数据计算
-            close_list = [float(x["close"]) for x in tk_data_list if x["close"] != ""]
-            volume_list = [float(x["volume"]) for x in tk_data_list if x["close"] != ""]
-            wmacd_list, diff_list, dea_list = get_w_macd(close_list)
+        # 数据计算
+        close_list = [float(x["close"]) for x in tk_data_list if x["close"] != ""]
+        volume_list = [float(x["volume"]) for x in tk_data_list if x["close"] != ""]
+        wmacd_list, diff_list, dea_list = get_w_macd(close_list)
 
-            # 处理核心逻辑
-            if wmacd_list[-1] > 0 >= wmacd_list[-2]:
-                if np.mean(volume_list[-5:-1]) < volume_list[-1] and diff_list[-1] >= 0:
-                    result_list.append({"ticker": item["ticker"], "diff": round(diff_list[-1], 4), "pe": float(pe_data_list[-1]["peTTM"])})
-        else:
-            log.logger.error("数据校验失败：" + str(item["ticker"]))
+        # 处理核心逻辑
+        if wmacd_list[-1] > 0 >= wmacd_list[-2]:
+            if np.mean(volume_list[-5:-1]) < volume_list[-1] and diff_list[-1] >= 0:
+                result_list.append(
+                    {"ticker": item["ticker"], "diff": round(diff_list[-1], 4), "pe": float(pe_data_list[-1]["peTTM"])})
 
     print(result_list)
     log.logger.info("结束分析数据：" + json.dumps(result_list))
@@ -89,4 +87,8 @@ def fun_analysis(cur_time=datetime.datetime.now()):
 
 
 if __name__ == "__main__":
+    # 开始更新数据
+    start_tk_crawl()
+    start_pe_crawl()
+    # 开始生成报告
     fun_analysis()

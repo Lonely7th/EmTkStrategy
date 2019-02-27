@@ -17,7 +17,7 @@ import xlwt
 
 from log.log_manager import Logger
 
-base_path = os.path.abspath(os.path.join(os.getcwd())) + "/report/doc/"
+base_path = os.path.abspath(os.path.join(os.getcwd(), "..")) + "/report/doc/"
 
 
 # 生成分析报告
