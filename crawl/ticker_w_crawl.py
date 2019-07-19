@@ -33,26 +33,29 @@ def start_tk_crawl():
     dm = DBManager("em_tk_database")
 
     log.logger.info("开始更新股票数据")
+    # 初始化baostock
     bs.login()
+    # 获取股票代码列表
     code_list = dm.get_code_list()
     for item in code_list:
+        max_try = 8  # 失败重连次数
         ticker = item["ticker"]
-        max_try = 8
         for tries in range(max_try):
             rs = bs.query_history_k_data(ticker, "date,code,open,high,low,close,volume,amount,adjustflag,turn,"
                                                  "pctChg", frequency="w", adjustflag="3")
             if rs.error_code == '0':
-                parse_pager(rs, ticker)
+                parse_pager(rs, ticker)  # 解析数据
                 break
             elif tries < (max_try - 1):
                 sleep(2)
                 continue
             else:
-                log.logger.error("更新股票数据失败：" + str(ticker))
-    log.logger.info("结束更新股票数据")
+                log.logger.error("加载股票数据失败：" + str(ticker))
+    log.logger.info("加载股票数据完成")
     bs.logout()
 
 
+# 解析数据并保存到数据库
 def parse_pager(content, ticker):
     timer_list = [x["date"] for x in dm.find_one_by_key({"ticker": ticker})["data_list"]]
     while content.next():
@@ -72,3 +75,8 @@ def parse_pager(content, ticker):
         }
         if __dict["date"] not in timer_list:
             dm.add_tk_item(ticker, __dict)
+
+
+if __name__ == "__main__":
+    start_tk_crawl()
+    pass

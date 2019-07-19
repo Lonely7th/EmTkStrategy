@@ -31,7 +31,7 @@ if __name__ == "__main__":
     dm_tk = DBManager("em_tk_database")
     dm_pe = DBManager("em_pe_database")
 
-    date_list_table = [date_range("2016-01-01", "2016-12-31"), date_range("2017-01-01", "2017-12-31"), date_range("2018-01-01", "2018-12-31")]
+    date_list_table = [date_range("2019-01-01", "2019-12-31")]
     code_list = [x for x in dm_tk.get_code_list()]
 
     for date_list in date_list_table:
